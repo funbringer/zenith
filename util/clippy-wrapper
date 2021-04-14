@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+# This is a small convenience wrapper for `cargo clippy`.
+#
+# It doesn't support every possible option, rather,
+# it aims to simplify a couple of common cases.
+
+import argparse
+import os
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--allow-dirty', action='store_true')
+    parser.add_argument('--allow-staged', action='store_true')
+    parser.add_argument('--fix', action='store_true', help='fix warnings')
+    parser.add_argument('--sensible-warnings', action='store_true')
+
+    # TODO: this approach to argument parsing may be overly simplistic
+    options, warning_args = parser.parse_known_args()
+
+    cargo_args = []
+    clippy_args = [
+        '--all-targets',
+        '--all-features',
+    ]
+
+    if options.fix:
+        cargo_args.append('+nightly')
+        clippy_args.extend([
+            '-Z',
+            'unstable-options',
+            '--fix',
+        ])
+
+    if options.allow_staged:
+        clippy_args.append('--allow-staged')
+
+    if options.allow_dirty:
+        clippy_args.append('--allow-dirty')
+
+    if options.sensible_warnings:
+        warning_args.extend([
+            # TODO: maybe narrow this down a bit
+            '-D',
+            'clippy::all',
+        ])
+
+    args = [
+        'cargo',
+        *cargo_args,
+        'clippy',
+        *clippy_args,
+        '--',
+        *warning_args,
+    ]
+
+    print(' '.join(args))
+
+    os.execlp(
+        'cargo',
+        *args,
+    )
+
+
+if __name__ == '__main__':
+    main()

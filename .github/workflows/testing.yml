@@ -87,3 +87,7 @@ jobs:
       - name: Run test
         run: |
           cargo test --test test_pageserver -- --nocapture --test-threads=1
+
+      - name: Run linter
+        run: |
+          ./util/clippy-wrapper --sensible-warnings
